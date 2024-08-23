@@ -13,13 +13,14 @@ from wandb.integration.sb3 import WandbCallback
 
 from env_SAC import droneEnv
 
-params = ["gamma", "learning_rate", "buffer_size", "tau", "batch_size"]
-gamma_range = []
-learning_rate_range = []
-buffer_size_range = [1, 500, 5000, 50000, 500000]
+params = ["defualt","gamma", "learning_rate", "buffer_size", "tau", "batch_size"]
+gamma_range = [0.25, 0.5 , 0.75]
+learning_rate_range = [0.003,0.007,0.03]
+buffer_size_range = [1, 100, 1000, 10000]
 tau_range = [0.00001, 0.001, 0.1, 0.5, 0.99]
 batch_size_range = [1, 32, 64, 128, 256]
 ranges = [
+    [0],
     gamma_range,
     learning_rate_range,
     buffer_size_range,
@@ -50,7 +51,7 @@ for i in range(len(params)):
 
         run = wandb.init(
             # CHANGE THIS to quadai-params
-            project="quadai-params",
+            project="quadai-params4",
             sync_tensorboard=True,
             monitor_gym=True,
             name=f"{params[i]}_{ranges[i][j]}",
@@ -86,25 +87,30 @@ for i in range(len(params)):
 
         # Create checkpoint callback
         checkpoint_callback = CheckpointCallback(
-            save_freq=100000, save_path=log_dir, name_prefix="rl_model_lr"
+            save_freq=20000, save_path=log_dir, name_prefix="rl_model_lr"
         )
 
         # Train the agent
         model.learn(
             # CHANGE THIS TO 500000
-            total_timesteps=500000,
+            total_timesteps=100000,
             callback=[
                 checkpoint_callback,
                 WandbCallback(
                     # CHANGE THIS TO 5000
-                    gradient_save_freq=5000,
-                    model_save_path=f"models/{run.id}",
-                    model_save_freq=100000,
+                    gradient_save_freq=1000,
+                    model_save_path=f"models/temp/{run.id}",
+                    model_save_freq=20000,
                     verbose=2,
                 ),
             ],
             progress_bar = True
         )
+
+        model_path = f"models/{params[i]}_{ranges[i][j]}"
+
+        os.makedirs(model_path, exist_ok=True)
+        model.save(f"{model_path}/model")
 
         # Close
         env.close()
