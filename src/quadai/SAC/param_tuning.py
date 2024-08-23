@@ -103,6 +103,7 @@ for i in range(len(params)):
                     verbose=2,
                 ),
             ],
+            progress_bar = True
         )
 
         # Close

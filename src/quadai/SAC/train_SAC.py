@@ -46,4 +46,5 @@ model.learn(
             verbose=2,
         ),
     ],
+    progress_bar = True
 )
